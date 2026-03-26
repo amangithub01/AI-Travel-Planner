@@ -21,6 +21,7 @@ app.add_middleware(
 )
 # ------------------------------
 
+
 # Define the data structure we expect from the user
 class TripRequest(BaseModel):
     origin: str
@@ -29,10 +30,11 @@ class TripRequest(BaseModel):
     end_date: str = "2026-04-07"
     max_price: float = 20000.0
 
+
 @app.post("/plan-trip")
 async def plan_trip(request: TripRequest):
     print(f"🚀 Received API request for {request.destination} from {request.origin}")
-    
+
     # Set up the initial state for LangGraph
     initial_state = {
         "origin": request.origin,
@@ -46,13 +48,21 @@ async def plan_trip(request: TripRequest):
         "weather_summary": None,
         "hotel_candidates": [],
         "flight_candidates": [],
-        "food_recommendations": [],   # <-- Added to state
-        "attraction_candidates": [], # <-- Added to state
-        "final_itinerary": None
+        "food_recommendations": [],  # <-- Added to state
+        "attraction_candidates": [],  # <-- Added to state
+        "final_itinerary": None,
     }
 
     # Run the graph
     final_state = travel_graph.invoke(initial_state)
+
+    # --- NEW: CHECK FOR BUDGET ERROR BEFORE RETURNING DATA ---
+    if final_state.get("error"):
+        print(f"⚠️ Sending budget warning to frontend: {final_state.get('error')}")
+        return {
+            "status": "error",
+            "message": final_state.get("error"),  # This sends Gemma's warning to the UI
+        }
 
     # Return a clean JSON response to the browser/frontend
     return {
@@ -60,7 +70,7 @@ async def plan_trip(request: TripRequest):
         "weather": final_state.get("weather_summary", "No weather data found."),
         "flights": final_state.get("flight_candidates", []),
         "hotels": final_state.get("hotel_candidates", []),
-        "food": final_state.get("food_recommendations", []),      # <-- NEW
-        "attractions": final_state.get("attraction_candidates", []), # <-- NEW
-        "itinerary": final_state.get("final_itinerary", "No itinerary generated.")
+        "food": final_state.get("food_recommendations", []),  # <-- NEW
+        "attractions": final_state.get("attraction_candidates", []),  # <-- NEW
+        "itinerary": final_state.get("final_itinerary", "No itinerary generated."),
     }

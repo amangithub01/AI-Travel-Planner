@@ -134,8 +134,20 @@ export default function TravelDashboard() {
             </div>
           </div>
           <div className="md:col-span-1">
-            <label className="text-[10px] font-black uppercase text-blue-600 mb-2 block ml-1">Budget</label>
-            <input type="number" placeholder="5000" value={formData.max_price} onChange={e => setFormData({ ...formData, max_price: Number(e.target.value) })} required className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-blue-200 rounded-2xl focus:bg-white transition-all outline-none font-black text-blue-600" />
+            <label className="text-[10px] font-black uppercase text-blue-600 mb-2 block ml-1">Budget ($ USD)</label>
+            <div className="relative group">
+              {/* The Dollar Symbol */}
+              <span className="absolute left-4 top-3.5 font-black text-slate-400 group-focus-within:text-blue-600 transition-colors">$</span>
+
+              <input
+                type="number"
+                placeholder="5000"
+                value={formData.max_price}
+                onChange={e => setFormData({ ...formData, max_price: Number(e.target.value) })}
+                required
+                className="w-full pl-8 pr-4 py-3 bg-slate-50 border-2 border-transparent focus:border-blue-200 rounded-2xl focus:bg-white transition-all outline-none font-black text-blue-600"
+              />
+            </div>
           </div>
           <button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl shadow-xl shadow-blue-600/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 h-[52px] disabled:opacity-50">
             {loading ? <Loader2 className="animate-spin w-6 h-6" /> : "Plan Trip"}

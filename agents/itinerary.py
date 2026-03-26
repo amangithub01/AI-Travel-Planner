@@ -4,7 +4,30 @@ from langchain_core.prompts import PromptTemplate
 from state import TravelState
 
 def itinerary_node(state: TravelState):
-    """Generates the final day-by-day itinerary using Groq (Llama 3)."""
+    # The Master Prompt
+    template = """
+    You are an expert, high-end travel concierge. Create a day-by-day itinerary for a trip to {destination} from {start_date} to {end_date}.
+
+    Here is the live data you must incorporate:
+    - Expected Weather: {weather}
+    - Chosen Flights: {flights}
+    - Chosen Hotels: {hotels}
+    - Local Attractions: {sights}
+    - Local Food to try: {food}
+
+    Your Output Requirements:
+    1. Introduction: Briefly welcome them to {destination} and mention how to pack for the {weather}.
+    2. Local Transit Hack: Explicitly tell the user the best way to get around.
+    3. Day-by-Day Plan: Provide a realistic morning, afternoon, and evening schedule using the attractions. 
+    4. Local Food: Suggest a famous local dish based on the food list.
+
+    Format this beautifully using Markdown. Keep it engaging but highly practical.
+    """
+
+    prompt = PromptTemplate(
+        input_variables=["destination", "start_date", "end_date", "weather", "flights", "hotels", "sights", "food"],
+        template=template
+    )
     print("📝 [Itinerary Agent] Compiling the final day-by-day travel plan...")
 
     # Grab the API key to ensure it exists

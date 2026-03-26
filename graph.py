@@ -8,9 +8,10 @@ from agents.search import search_node
 from agents.flight import flight_node
 from agents.store import store_node
 from agents.recommend import recommend_hotels_node, recommend_flights_node
-from agents.itinerary import itinerary_node 
-from agents.food import food_node          # <--- NEW IMPORT
-from agents.attractions import attractions_node # <--- NEW IMPORT
+from agents.itinerary import itinerary_node
+from agents.food import food_node  # <--- NEW IMPORT
+from agents.attractions import attractions_node  # <--- NEW IMPORT
+from agents.budget import budget_node  # <--- NEW IMPORT
 
 # 1. Initialize the Graph
 workflow = StateGraph(TravelState)
@@ -23,11 +24,23 @@ workflow.add_node("flight_agent", flight_node)
 workflow.add_node("store_agent", store_node)
 workflow.add_node("recommend_hotels", recommend_hotels_node)
 workflow.add_node("recommend_flights", recommend_flights_node)
-workflow.add_node("food_agent", food_node)             # <--- NEW NODE
-workflow.add_node("attractions_agent", attractions_node) # <--- NEW NODE
-workflow.add_node("itinerary_agent", itinerary_node) 
+workflow.add_node("food_agent", food_node)
+workflow.add_node("attractions_agent", attractions_node)
+workflow.add_node("itinerary_agent", itinerary_node)
+workflow.add_node("budget_agent", budget_node)
+
 
 # 3. The Smart Router (Conditional Logic)
+def route_after_budget(state: TravelState):
+    """If budget is too low, stop everything. Else, proceed to weather."""
+    if state.get("error"):
+        print("🛑 [Router] Budget too low. Halting workflow.")
+        return END
+    else:
+        print("✅ [Router] Budget approved. Starting weather search.")
+        return "weather_agent"
+
+
 def route_after_cache(state: TravelState):
     """If cache hits, jump straight to recommendations. Else, run the live AI agents."""
     if state.get("cached_results", False):
@@ -37,8 +50,12 @@ def route_after_cache(state: TravelState):
         print("🚦 [Router] Cache miss. Initiating live web extraction.")
         return "search_agent"
 
+
 # 4. Wire the Edges (The Flowchart)
-workflow.add_edge(START, "weather_agent")
+workflow.add_edge(START, "budget_agent")  # <--- START goes to Budget first!
+workflow.add_conditional_edges(
+    "budget_agent", route_after_budget
+)  # <--- Then check if we should stop
 workflow.add_edge("weather_agent", "cache_agent")
 
 # Add the crossroad
@@ -51,10 +68,10 @@ workflow.add_edge("store_agent", "recommend_hotels")
 
 # Path B: The Final Presentation (Both routes converge here)
 workflow.add_edge("recommend_hotels", "recommend_flights")
-workflow.add_edge("recommend_flights", "food_agent")        # <--- UPDATED FLOW
-workflow.add_edge("food_agent", "attractions_agent")       # <--- NEW FLOW
+workflow.add_edge("recommend_flights", "food_agent")  # <--- UPDATED FLOW
+workflow.add_edge("food_agent", "attractions_agent")  # <--- NEW FLOW
 workflow.add_edge("attractions_agent", "itinerary_agent")  # <--- NEW FLOW
-workflow.add_edge("itinerary_agent", END) 
+workflow.add_edge("itinerary_agent", END)
 
 # 5. Compile the application
 app = workflow.compile()
