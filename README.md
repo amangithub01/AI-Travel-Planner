@@ -33,8 +33,7 @@ This project uses a decentralized agentic workflow to handle complex travel cons
 ---
 
 ## 📸 Project Showcase
-> **[INSERT LINK TO YOUR VIDEO DEMO OR GIF HERE]**
-> *Watch the video to see Gemma:2b translating codes in the terminal while the UI updates in real-time!*
+![AI Travel Planner Interface](project.png)
 
 ### Key Features:
 * **Real-time Processing:** Watch the terminal logs to see agents collaborating.
